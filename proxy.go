@@ -179,7 +179,7 @@ func (s *Server) handlerConn(conn net.Conn) (err error) {
 			req.Header.Set("Connection", "Keep-Alive")
 			req.Write(conn2)
 		}
-		glog.V(LDEBUG).Infof("[http] %s <-> %s layer success", req.Method, conn.RemoteAddr(), addr)
+		glog.V(LDEBUG).Infof("[http] %s <-> %s layer success", conn.RemoteAddr(), addr)
 		defer s.HTTPHandler.Clean()
 	}
 	defer conn2.Close()
