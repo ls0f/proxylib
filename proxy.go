@@ -54,11 +54,12 @@ func (r *reqReader) Read(p []byte) (n int, err error) {
 }
 
 type Server struct {
-	Addr          string
-	Socks5Handler Handler
-	HTTPHandler   Handler
-	DisableSocks5 bool
-	DisableHTTP   bool
+	Addr               string
+	Socks5Handler      Handler
+	HTTPHandler        Handler
+	DisableSocks5      bool
+	DisableHTTP        bool
+	DisableHTTPCONNECT bool
 }
 
 func (s *Server) handlerConn(conn net.Conn) (err error) {
@@ -150,11 +151,17 @@ func (s *Server) handlerConn(conn net.Conn) (err error) {
 		if s.DisableHTTP || s.HTTPHandler == nil {
 			return errNotSupportProtocol
 		}
+
 		req, err := http.ReadRequest(bufio.NewReader(&reqReader{b: buf[:n], r: conn}))
 		if err != nil {
 			return err
 		}
 		glog.V(LINFO).Infof("[http] %s %s - %s %s", req.Method, conn.RemoteAddr(), req.Host, req.Proto)
+
+		if req.Method == "CONNECT" && s.DisableHTTPCONNECT {
+			conn.Write([]byte("HTTP/1.1 502 Connection refused\r\n\r\n"))
+			return errNotSupportProtocol
+		}
 
 		if glog.V(LDEBUG) {
 			dump, _ := httputil.DumpRequest(req, false)
