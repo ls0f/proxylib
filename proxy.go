@@ -179,7 +179,7 @@ func (s *Server) handlerConn(conn net.Conn) (err error) {
 			req.Header.Set("Connection", "Keep-Alive")
 			req.Write(conn2)
 		}
-		glog.V(LDEBUG).Infof("[http] %s <-> %s layer success", req.Method, conn.RemoteAddr(), addr)
+		glog.V(LDEBUG).Infof("[http] %s <-> %s layer success", conn.RemoteAddr(), addr)
 		defer s.HTTPHandler.Clean()
 	}
 	defer conn2.Close()
@@ -213,11 +213,12 @@ func (s *Server) ListenAndServe() (err error) {
 	if err != nil {
 		return err
 	}
+	glog.Infof("https/socks5 listen at %s", l.Addr().(*net.TCPAddr).String())
 	for {
 		if conn, err := l.Accept(); err == nil {
 			go func() {
 				if err := s.handlerConn(conn); err != nil {
-					glog.V(LERROR).Infof("handle conn: %v", err)
+					glog.V(LERROR).Infof("handle conn[%s]: %v", conn.RemoteAddr().String(), err)
 				}
 			}()
 		} else {
