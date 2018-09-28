@@ -182,6 +182,7 @@ func (s *Server) handlerConn(conn net.Conn) (err error) {
 		if req.Method == "CONNECT" {
 			conn.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n"))
 		} else {
+			// bug here
 			req.Header.Del("Proxy-Connection")
 			req.Header.Set("Connection", "Keep-Alive")
 			req.Write(conn2)
